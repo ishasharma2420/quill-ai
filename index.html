@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html><head><title>Quill AI — Backend Test</title>
+<style>
+  body { font-family: system-ui; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #f8f9fb; }
+  h1 { color: #0F1729; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-right: 4px; }
+  .badge-crm { background: #E8F0FE; color: #1a56db; }
+  .badge-sis { background: #FEF3C7; color: #92400e; }
+  .badge-ext { background: #F3E8FF; color: #7c3aed; }
+  input { width: 100%; padding: 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+  button { background: #0F1729; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; margin-top: 8px; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; max-height: 600px; overflow-y: auto; }
+  .status { padding: 8px 16px; border-radius: 6px; margin: 8px 0; }
+  .ok { background: #d1fae5; color: #065f46; }
+  .err { background: #fee2e2; color: #991b1b; }
+  .loading { color: #6b7280; font-style: italic; }
+</style></head>
+<body>
+  <h1>🪶 Quill AI — Backend Test Console</h1>
+  <p>Use this to verify the pipeline is working before the UI is ready.</p>
+
+  <h3>1. Health Check</h3>
+  <button onclick="checkHealth()">Check /health</button>
+  <div id="health"></div>
+
+  <h3>2. Proactive Insights</h3>
+  <button onclick="checkInsights()">Check /api/proactive-insights</button>
+  <div id="insights"></div>
+
+  <h3>3. Generate Report</h3>
+  <input id="prompt" placeholder="e.g. Show me the enrollment funnel for Fall 2026" />
+  <button onclick="generateReport()">Generate Report</button>
+  <div id="report"></div>
+
+<script>
+  const BASE = window.location.origin;
+
+  async function checkHealth() {
+    document.getElementById("health").innerHTML = '<div class="loading">Checking...</div>';
+    try {
+      const res = await fetch(`${BASE}/health`);
+      const data = await res.json();
+      document.getElementById("health").innerHTML = `<div class="status ok">✅ OK</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
+    } catch(e) {
+      document.getElementById("health").innerHTML = `<div class="status err">❌ ${e.message}</div>`;
+    }
+  }
+
+  async function checkInsights() {
+    document.getElementById("insights").innerHTML = '<div class="loading">Scanning...</div>';
+    try {
+      const res = await fetch(`${BASE}/api/proactive-insights`);
+      const data = await res.json();
+      document.getElementById("insights").innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    } catch(e) {
+      document.getElementById("insights").innerHTML = `<div class="status err">❌ ${e.message}</div>`;
+    }
+  }
+
+  async function generateReport() {
+    const prompt = document.getElementById("prompt").value.trim();
+    if (!prompt) return;
+    document.getElementById("report").innerHTML = '<div class="loading">Generating report (this takes 5-10 seconds)...</div>';
+    try {
+      const res = await fetch(`${BASE}/api/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      document.getElementById("report").innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    } catch(e) {
+      document.getElementById("report").innerHTML = `<div class="status err">❌ ${e.message}</div>`;
+    }
+  }
+</script>
+</body></html>
