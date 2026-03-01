@@ -21,7 +21,6 @@ const LS_SECRET_KEY = process.env.LS_SECRET_KEY;
 // Mavis Data Warehouse
 const MAVIS_BASE_URL = process.env.MAVIS_BASE_URL; // e.g. https://mavis-rest-us11.leadsquared.com/api/db{dbId}/tab{tabId}
 const MAVIS_API_KEY = process.env.MAVIS_API_KEY;
-const MAVIS_BASIC_AUTH = process.env.MAVIS_BASIC_AUTH; // Base64(accessKey:secretKey)
 const MAVIS_ORG_CODE = process.env.MAVIS_ORG_CODE || "78807";
 
 // We'll have multiple Mavis tables — store their tab URLs
@@ -251,8 +250,7 @@ async function fetchMavisTable(tableUrl) {
       {
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": MAVIS_API_KEY,
-          Authorization: `Basic ${MAVIS_BASIC_AUTH}`
+          "x-api-key": MAVIS_API_KEY
         }
       }
     );
