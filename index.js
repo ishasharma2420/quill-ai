@@ -175,7 +175,7 @@ async function fetchCRMLeads(filters = {}) {
             Include_CSV: [
               "ProspectID", "FirstName", "LastName", "EmailAddress",
               "ProspectStage", "Source", "CreatedOn", "ModifiedOn",
-              "EngagementScore", "Score",
+              "EngagementScore", "Score", "LeadType",
               "mx_Campus", "mx_Program_Interest", "mx_Program_Level",
               "OwnerId", "mx_Intended_Intake_Term",
               "mx_Application_Submitted", "mx_Financial_Aid_Status",
@@ -195,7 +195,10 @@ async function fetchCRMLeads(filters = {}) {
         }
       );
 
-      const leads = Array.isArray(response.data) ? response.data : [];
+      // Handle both response formats (array or {Leads: [...]})
+      const leads = Array.isArray(response.data)
+        ? response.data
+        : response.data?.Leads || [];
 
       // Flatten LeadPropertyList into flat objects
       const flattened = leads.map(lead => {
@@ -206,7 +209,9 @@ async function fetchCRMLeads(filters = {}) {
         return { ...lead, ...props };
       });
 
-      allLeads.push(...flattened);
+      // Filter to Students only (LeadType = OT_2)
+      const students = flattened.filter(l => l.LeadType === "OT_2");
+      allLeads.push(...students);
 
       if (leads.length < pageSize) {
         hasMore = false;
@@ -216,7 +221,7 @@ async function fetchCRMLeads(filters = {}) {
       }
     }
 
-    console.log(`📋 CRM: Fetched ${allLeads.length} leads`);
+    console.log(`📋 CRM: Fetched ${allLeads.length} student leads (OT_2)`);
 
     // Apply additional filters in-memory (since LSQ Leads.Get only supports single lookup)
     let filtered = allLeads;
