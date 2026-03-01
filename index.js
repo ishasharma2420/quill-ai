@@ -43,14 +43,14 @@ const MAVIS_TABLES = {
 ===================================================== */
 
 const MARKETING_CAMPAIGNS = [
-  { campaign_name: "Nursing BSN — Google Ads", platform: "Google Ads", program: "Nursing BSN", spend: 48000, leads_generated: 156, cost_per_lead: 307.69, enrolled: 18, cost_per_enrolled: 2666.67, period: "Fall 2025" },
-  { campaign_name: "MBA Program — Facebook", platform: "Facebook", program: "Business MBA", spend: 32000, leads_generated: 210, cost_per_lead: 152.38, enrolled: 31, cost_per_enrolled: 1032.26, period: "Fall 2025" },
-  { campaign_name: "CS Program — Google Ads", platform: "Google Ads", program: "Computer Science BS", spend: 28000, leads_generated: 98, cost_per_lead: 285.71, enrolled: 12, cost_per_enrolled: 2333.33, period: "Fall 2025" },
-  { campaign_name: "Education MEd — Email", platform: "Email Campaign", program: "Education MEd", spend: 5200, leads_generated: 87, cost_per_lead: 59.77, enrolled: 22, cost_per_enrolled: 236.36, period: "Fall 2025" },
-  { campaign_name: "Psychology BA — Facebook", platform: "Facebook", program: "Psychology BA", spend: 15000, leads_generated: 134, cost_per_lead: 111.94, enrolled: 14, cost_per_enrolled: 1071.43, period: "Fall 2025" },
-  { campaign_name: "Brand Awareness — Google Ads", platform: "Google Ads", program: "General", spend: 22000, leads_generated: 320, cost_per_lead: 68.75, enrolled: 0, cost_per_enrolled: null, period: "Fall 2025" },
-  { campaign_name: "Open House Event — Organic", platform: "Organic", program: "General", spend: 3500, leads_generated: 45, cost_per_lead: 77.78, enrolled: 15, cost_per_enrolled: 233.33, period: "Spring 2026" },
-  { campaign_name: "Nursing BSN — College Fair", platform: "College Fair", program: "Nursing BSN", spend: 8000, leads_generated: 62, cost_per_lead: 129.03, enrolled: 20, cost_per_enrolled: 400.00, period: "Spring 2026" },
+  { campaign_name: "International Relations — Facebook Ads", platform: "Facebook Ads", program: "International Relations", spend: 48000, leads_generated: 156, cost_per_lead: 307.69, enrolled: 18, cost_per_enrolled: 2666.67, period: "Fall" },
+  { campaign_name: "Business — Pay per Click Ads", platform: "Pay per Click Ads", program: "Business", spend: 32000, leads_generated: 210, cost_per_lead: 152.38, enrolled: 31, cost_per_enrolled: 1032.26, period: "Fall" },
+  { campaign_name: "Criminal Justice — Facebook Ads", platform: "Facebook Ads", program: "Criminal Justice", spend: 28000, leads_generated: 98, cost_per_lead: 285.71, enrolled: 12, cost_per_enrolled: 2333.33, period: "Fall" },
+  { campaign_name: "Psychology — Inbound Email", platform: "Inbound Email", program: "Psychology", spend: 5200, leads_generated: 87, cost_per_lead: 59.77, enrolled: 22, cost_per_enrolled: 236.36, period: "Fall" },
+  { campaign_name: "Biology — Social Media", platform: "Social Media", program: "Biology", spend: 15000, leads_generated: 134, cost_per_lead: 111.94, enrolled: 14, cost_per_enrolled: 1071.43, period: "Fall" },
+  { campaign_name: "Brand Awareness — Pay per Click Ads", platform: "Pay per Click Ads", program: "General", spend: 22000, leads_generated: 320, cost_per_lead: 68.75, enrolled: 0, cost_per_enrolled: null, period: "Fall" },
+  { campaign_name: "Open House — Event / Webinar", platform: "Event / Webinar", program: "General", spend: 3500, leads_generated: 45, cost_per_lead: 77.78, enrolled: 15, cost_per_enrolled: 233.33, period: "Spring" },
+  { campaign_name: "Architecture — Trade Show", platform: "Trade Show", program: "Architecture", spend: 8000, leads_generated: 62, cost_per_lead: 129.03, enrolled: 20, cost_per_enrolled: 400.00, period: "Spring" },
 ];
 
 // Placeholder for IPEDS / BLS if needed later
@@ -95,11 +95,11 @@ Return JSON only:
 {
   "report_type": "one of the report type IDs",
   "filters": {
-    "campus": "Campus A" | "Campus B" | "Campus C" | "Online" | null,
-    "program": "Nursing BSN" | "Business MBA" | "Computer Science BS" | "Education MEd" | "Psychology BA" | null,
-    "term": "Fall 2025" | "Spring 2026" | "Summer 2026" | "Fall 2026" | null,
-    "source": "Website" | "Google Ads" | "Facebook" | "Referral" | "College Fair" | "Email Campaign" | "Organic Search" | null,
-    "counselor": "Sarah Chen" | "James Miller" | "Maria Rodriguez" | "David Kim" | "Lisa Thompson" | null,
+    "campus": "California Campus" | "Dallas Campus" | "Michigan Campus" | "New York Campus" | "Washington Campus" | null,
+    "program": "Accounting" | "Architecture" | "Art and Design" | "Biology" | "Business" | "Cosmetology" | "Criminal Justice" | "Psychology" | "International Relations" | null,
+    "term": "Fall" | "Spring" | "Summer" | null,
+    "source": "Social Media" | "Inbound Email" | "Inbound Phone call" | "Pay per Click Ads" | "Trade Show" | "B2B Referral" | "Website Form" | "Facebook Ads" | "Chatbot" | "Event / Webinar" | "Website" | null,
+    "counselor": null,
     "date_range": { "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" } | null
   },
   "user_intent_summary": "one sentence describing what the user wants"
@@ -118,76 +118,54 @@ Return JSON only:
 ===================================================== */
 
 // --- LeadSquared CRM: Fetch leads via Advanced Search ---
-async function fetchCRMLeads(filters = {}) {
+// Actual CRM dropdown values
+const CRM_STAGES = [
+  "New Prospect", "Engagement Initiated", "Application Pending",
+  "Application Completed", "Enrolled", "Disqualified", "Invalid", "Attempting Contact"
+];
+
+const COLUMNS_CSV = [
+  "ProspectID", "FirstName", "LastName", "EmailAddress",
+  "ProspectStage", "Source", "CreatedOn", "ModifiedOn",
+  "EngagementScore", "Score", "LeadType",
+  "mx_Campus", "mx_Program_Interest", "mx_Program_Level",
+  "OwnerId", "mx_Intended_Intake_Term",
+  "mx_Application_Submitted", "mx_Financial_Aid_Status",
+  "mx_GPA_Range", "mx_Enrollment_Deposit_Paid",
+  "mx_Readiness_Score", "mx_Readiness_Bucket",
+  "mx_Engagement_Readiness", "mx_Stage_Entered_On",
+  "mx_Offer_Given_Date", "mx_Gender", "mx_US_States",
+  "mx_Preferred_Language"
+].join(",");
+
+// Helper: flatten LeadPropertyList into flat object
+function flattenLead(lead) {
+  const props = {};
+  if (lead.LeadPropertyList) {
+    lead.LeadPropertyList.forEach(p => { props[p.Attribute] = p.Value; });
+  }
+  return { ...lead, ...props };
+}
+
+// Fetch students for a single stage
+async function fetchStudentsByStage(stage) {
   try {
-    // Build search criteria
-    const searchCriteria = [];
-
-    if (filters.campus) {
-      searchCriteria.push({
-        Attribute: "mx_Campus",
-        Condition: "eq",
-        Value: filters.campus
-      });
-    }
-    if (filters.program) {
-      searchCriteria.push({
-        Attribute: "mx_Program_Interest",
-        Condition: "eq",
-        Value: filters.program
-      });
-    }
-    if (filters.source) {
-      searchCriteria.push({
-        Attribute: "Source",
-        Condition: "eq",
-        Value: filters.source
-      });
-    }
-    if (filters.term) {
-      searchCriteria.push({
-        Attribute: "mx_Intended_Intake_Term",
-        Condition: "eq",
-        Value: filters.term
-      });
-    }
-    if (filters.counselor) {
-      searchCriteria.push({
-        Attribute: "OwnerId",
-        Condition: "eq",
-        Value: filters.counselor
-      });
-    }
-
-    const allLeads = [];
+    const allForStage = [];
     let pageIndex = 1;
-    const pageSize = 200;
     let hasMore = true;
 
     while (hasMore) {
       const response = await axios.post(
         `${LS_BASE_URL}/LeadManagement.svc/Leads.Get`,
         {
-          Parameter: searchCriteria.length > 0
-            ? { LookupName: searchCriteria[0].Attribute, LookupValue: searchCriteria[0].Value, SqlOperator: "=" }
-            : { LookupName: "ProspectStage", LookupValue: "", SqlOperator: "ne" },
-          Columns: {
-            Include_CSV: [
-              "ProspectID", "FirstName", "LastName", "EmailAddress",
-              "ProspectStage", "Source", "CreatedOn", "ModifiedOn",
-              "EngagementScore", "Score", "LeadType",
-              "mx_Campus", "mx_Program_Interest", "mx_Program_Level",
-              "OwnerId", "mx_Intended_Intake_Term",
-              "mx_Application_Submitted", "mx_Financial_Aid_Status",
-              "mx_GPA_Range", "mx_Enrollment_Deposit_Paid",
-              "mx_Readiness_Score", "mx_Readiness_Bucket",
-              "mx_Engagement_Readiness", "mx_Stage_Entered_On",
-              "mx_Offer_Given_Date", "mx_Gender", "mx_US_States",
-              "mx_Preferred_Language"
-            ].join(",")
+          Parameter: {
+            LookupName: "ProspectStage",
+            LookupValue: stage,
+            SqlOperator: "="
           },
-          Sorting: { ColumnName: "CreatedOn", Direction: "1" },
-          Paging: { PageIndex: pageIndex, PageSize: pageSize }
+          Columns: { Include_CSV: COLUMNS_CSV },
+          Sorting: { ColumnName: "ModifiedOn", Direction: "1" },
+          Paging: { PageIndex: pageIndex, PageSize: 200 }
         },
         {
           params: { accessKey: LS_ACCESS_KEY, secretKey: LS_SECRET_KEY },
@@ -195,35 +173,44 @@ async function fetchCRMLeads(filters = {}) {
         }
       );
 
-      // Handle both response formats (array or {Leads: [...]})
-      const leads = Array.isArray(response.data)
+      const rawLeads = Array.isArray(response.data)
         ? response.data
         : response.data?.Leads || [];
 
-      // Flatten LeadPropertyList into flat objects
-      const flattened = leads.map(lead => {
-        const props = {};
-        if (lead.LeadPropertyList) {
-          lead.LeadPropertyList.forEach(p => { props[p.Attribute] = p.Value; });
-        }
-        return { ...lead, ...props };
-      });
-
-      // Filter to Students only (LeadType = OT_2)
+      const flattened = rawLeads.map(flattenLead);
       const students = flattened.filter(l => l.LeadType === "OT_2");
-      allLeads.push(...students);
+      allForStage.push(...students);
 
-      if (leads.length < pageSize) {
+      if (rawLeads.length < 200) {
         hasMore = false;
       } else {
         pageIndex++;
-        if (pageIndex > 10) hasMore = false; // Safety cap
+        if (pageIndex > 10) hasMore = false;
       }
     }
 
-    console.log(`📋 CRM: Fetched ${allLeads.length} student leads (OT_2)`);
+    console.log(`  Stage "${stage}": ${allForStage.length} students`);
+    return allForStage;
+  } catch (err) {
+    console.error(`  ❌ Stage "${stage}" fetch error:`, err.response?.data || err.message);
+    return [];
+  }
+}
 
-    // Apply additional filters in-memory (since LSQ Leads.Get only supports single lookup)
+// Main: fetch all student leads across all stages
+async function fetchCRMLeads(filters = {}) {
+  try {
+    console.log("📋 CRM: Fetching students by stage...");
+    let allLeads = [];
+
+    for (const stage of CRM_STAGES) {
+      const students = await fetchStudentsByStage(stage);
+      allLeads.push(...students);
+    }
+
+    console.log(`📋 CRM: Total ${allLeads.length} student leads (OT_2)`);
+
+    // Apply filters in-memory
     let filtered = allLeads;
     if (filters.campus) {
       filtered = filtered.filter(l => l.mx_Campus === filters.campus);
@@ -311,9 +298,9 @@ function buildFunnelData(leads) {
 
   // Preferred order (adjust based on actual LSQ stage configuration)
   const preferredOrder = [
-    "Engagement Initiated", "Application Pending", "Application Completed",
-    "Inquiry", "Application Started", "Application Submitted",
-    "Accepted", "Enrolled", "Withdrawn"
+    "New Prospect", "Attempting Contact", "Engagement Initiated",
+    "Application Pending", "Application Completed",
+    "Enrolled", "Disqualified", "Invalid"
   ];
 
   // Build ordered funnel from stages that actually have data
@@ -384,8 +371,8 @@ function identifyAtRiskLeads(leads) {
     }
     // Accepted but no deposit
     const stage = lead.ProspectStage;
-    if (stage === "Accepted" && lead.mx_Enrollment_Deposit_Paid !== "Yes") {
-      reasons.push("Accepted but deposit not paid");
+    if (stage === "Application Completed" && lead.mx_Enrollment_Deposit_Paid !== "Yes") {
+      reasons.push("Application completed but deposit not paid");
     }
 
     if (reasons.length > 0) {
@@ -591,18 +578,18 @@ async function generateProactiveInsights() {
       });
     }
 
-    // Check 2: Acceptance-to-enrollment drop
+    // Check 2: Application Completed to Enrolled drop
     const funnel = buildFunnelData(allLeads);
-    const accepted = funnel["Accepted"]?.count || 0;
+    const completed = funnel["Application Completed"]?.count || 0;
     const enrolled = funnel["Enrolled"]?.count || 0;
-    if (accepted > 0 && enrolled > 0) {
-      const yieldRate = (enrolled / accepted) * 100;
+    if (completed > 0 && enrolled > 0) {
+      const yieldRate = (enrolled / completed) * 100;
       if (yieldRate < 70) {
         insights.push({
           severity: yieldRate < 50 ? "critical" : "warning",
           title: `Yield rate at ${yieldRate.toFixed(0)}% — below target`,
-          description: `Only ${enrolled} of ${accepted} accepted students have enrolled. ${accepted - enrolled} students are at risk of not converting.`,
-          investigate_prompt: "Show me accepted students who haven't enrolled yet"
+          description: `Only ${enrolled} of ${completed} students with completed applications have enrolled. ${completed - enrolled} students are at risk of not converting.`,
+          investigate_prompt: "Show me students with completed applications who haven't enrolled"
         });
       }
     }
