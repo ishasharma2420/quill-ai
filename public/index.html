@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quill AI — Prompt to Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #0B0F1A;
+      --bg-sidebar: #0F1524;
+      --bg-surface: #FFFFFF;
+      --bg-page: #F3F5F9;
+      --bg-hover: #1A2038;
+      --bg-input: #F7F8FA;
+      --text-primary: #111827;
+      --text-secondary: #5F6B7A;
+      --text-muted: #9CA3AF;
+      --text-inverse: #F9FAFB;
+      --accent: #2563EB;
+      --accent-hover: #1D4ED8;
+      --accent-light: #EFF6FF;
+      --border: #E2E6ED;
+      --border-light: #F0F2F5;
+      --green: #059669;
+      --green-bg: #ECFDF5;
+      --amber: #D97706;
+      --amber-bg: #FFFBEB;
+      --red: #DC2626;
+      --red-bg: #FEF2F2;
+      --purple: #7C3AED;
+      --purple-bg: #F5F3FF;
+      --badge-crm: #2563EB;
+      --badge-sis: #D97706;
+      --badge-ext: #7C3AED;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 20px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ============================
+       LAYOUT
+    ============================ */
+    .app-shell {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* ============================
+       SIDEBAR
+    ============================ */
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: var(--bg-deep);
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .sidebar-brand {
+      padding: 24px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-inverse);
+      letter-spacing: -0.3px;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Sidebar Sections */
+    .sidebar-section {
+      padding: 16px 12px 8px;
+    }
+
+    .sidebar-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.3);
+      padding: 0 8px;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 2px;
+    }
+
+    .sidebar-item:hover {
+      background: var(--bg-hover);
+      color: rgba(255,255,255,0.9);
+    }
+
+    .sidebar-item .item-icon {
+      font-size: 15px;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .sidebar-item .item-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Prompt History */
+    .prompt-history {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px;
+    }
+
+    .prompt-history::-webkit-scrollbar { width: 4px; }
+    .prompt-history::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    .history-item {
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.5);
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: 1px;
+      line-height: 1.4;
+    }
+
+    .history-item:hover {
+      background: var(--bg-hover);
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* Sidebar Footer */
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .powered-by {
+      font-size: 10px;
+      color: rgba(255,255,255,0.25);
+      text-align: center;
+    }
+
+    /* ============================
+       MAIN CONTENT
+    ============================ */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      height: 56px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+    }
+
+    .btn-icon:hover {
+      background: var(--bg-input);
+      border-color: #d0d5dd;
+    }
+
+    /* Alert Banner */
+    .alert-banner {
+      margin: 16px 24px 0;
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+      animation: slideDown 0.3s ease;
+    }
+
+    .alert-banner.visible { display: flex; }
+
+    .alert-banner.warning {
+      background: var(--amber-bg);
+      border: 1px solid #FDE68A;
+    }
+
+    .alert-banner.critical {
+      background: var(--red-bg);
+      border: 1px solid #FECACA;
+    }
+
+    .alert-banner.info {
+      background: var(--accent-light);
+      border: 1px solid #BFDBFE;
+    }
+
+    .alert-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .alert-body { flex: 1; }
+
+    .alert-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .alert-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .alert-action {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      cursor: pointer;
+      white-space: nowrap;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--accent);
+      background: white;
+      transition: all 0.15s;
+      align-self: center;
+    }
+
+    .alert-action:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    .alert-dismiss {
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--text-muted);
+      align-self: flex-start;
+      padding: 2px;
+      line-height: 1;
+    }
+
+    /* Content Scroll Area */
+    .content-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .content-scroll::-webkit-scrollbar { width: 6px; }
+    .content-scroll::-webkit-scrollbar-thumb { background: #d0d5dd; border-radius: 3px; }
+
+    /* ============================
+       PROMPT INPUT
+    ============================ */
+    .prompt-section {
+      max-width: 860px;
+      margin: 0 auto 24px;
+      width: 100%;
+    }
+
+    .prompt-container {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .prompt-input-wrap {
+      flex: 1;
+      position: relative;
+    }
+
+    .prompt-input {
+      width: 100%;
+      padding: 14px 18px;
+      padding-left: 44px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .prompt-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    .prompt-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .prompt-search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .btn-generate {
+      padding: 0 24px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-generate:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Quick Prompts */
+    .quick-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .quick-prompt {
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--bg-surface);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .quick-prompt:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    /* ============================
+       LOADING SHIMMER
+    ============================ */
+    .loading-container {
+      max-width: 860px;
+      margin: 0 auto;
+      display: none;
+    }
+
+    .loading-container.visible { display: block; }
+
+    .shimmer-card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+    }
+
+    .shimmer {
+      border-radius: 6px;
+      background: linear-gradient(90deg, #f0f0f0 0%, #e8e8e8 40%, #f0f0f0 80%);
+      background-size: 300% 100%;
+      animation: shimmer 1.8s ease infinite;
+    }
+
+    .shimmer-title { height: 24px; width: 55%; margin-bottom: 16px; }
+    .shimmer-text { height: 14px; width: 80%; margin-bottom: 10px; }
+    .shimmer-text-short { height: 14px; width: 45%; margin-bottom: 24px; }
+    .shimmer-metric { height: 72px; border-radius: 10px; margin-bottom: 12px; }
+    .shimmer-chart { height: 220px; border-radius: 10px; margin-top: 20px; }
+
+    .loading-label {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 16px;
+      animation: pulse 1.5s ease infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================
+       REPORT CARD
+    ============================ */
+    .report-container {
+      max-width: 860px;
+      margin: 0 auto;
+      display: none;
+    }
+
+    .report-container.visible {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .report-card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-light);
+      overflow: hidden;
+    }
+
+    /* Report Header */
+    .report-header {
+      padding: 28px 28px 20px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .report-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .source-badge.crm { background: #EFF6FF; color: var(--badge-crm); }
+    .source-badge.sis { background: #FFFBEB; color: var(--badge-sis); }
+    .source-badge.external { background: #F5F3FF; color: var(--badge-ext); }
+
+    .report-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    .report-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.4px;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    .report-summary {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Toolbar */
+    .report-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      background: var(--bg-input);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .toolbar-btn {
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+    }
+
+    .toolbar-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .toolbar-btn.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .toolbar-btn.primary:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Report Body */
+    .report-body {
+      padding: 28px;
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      background: var(--bg-input);
+    }
+
+    .kpi-label {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+
+    .kpi-trend {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 6px;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .kpi-trend.up { color: var(--green); background: var(--green-bg); }
+    .kpi-trend.down { color: var(--red); background: var(--red-bg); }
+    .kpi-trend.flat { color: var(--text-muted); background: var(--bg-input); }
+
+    /* Chart Section */
+    .chart-section {
+      margin-bottom: 28px;
+    }
+
+    .chart-wrapper {
+      background: var(--bg-input);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      padding: 20px;
+      position: relative;
+      max-height: 380px;
+    }
+
+    .chart-wrapper canvas {
+      max-height: 340px !important;
+    }
+
+    /* Narrative Sections */
+    .narrative-section {
+      margin-bottom: 20px;
+      padding: 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      border-left: 3px solid var(--accent);
+    }
+
+    .narrative-section[data-source="SIS"] { border-left-color: var(--amber); }
+    .narrative-section[data-source="External"] { border-left-color: var(--purple); }
+
+    .narrative-heading {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .narrative-body {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* Actions */
+    .actions-section {
+      margin-bottom: 28px;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .action-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      margin-bottom: 8px;
+      transition: background 0.15s;
+    }
+
+    .action-item:hover { background: var(--bg-input); }
+
+    .action-priority {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .action-priority.high { background: var(--red-bg); color: var(--red); }
+    .action-priority.medium { background: var(--amber-bg); color: var(--amber); }
+    .action-priority.low { background: var(--green-bg); color: var(--green); }
+
+    .action-content { flex: 1; }
+
+    .action-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+
+    .action-rationale {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Suggestive Prompts */
+    .suggestive-section {
+      padding: 20px 28px;
+      background: var(--bg-input);
+      border-top: 1px solid var(--border-light);
+    }
+
+    .suggestive-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .suggestive-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .suggestive-chip {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: var(--bg-surface);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+    }
+
+    .suggestive-chip:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    /* Empty State */
+    .empty-state {
+      max-width: 860px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 60px 40px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .empty-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 420px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* LSQ Navbar spacer (when embedded in LeadSquared) */
+    .lsq-spacer {
+      height: 0px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="lsq-spacer"></div>
+
+<div class="app-shell">
+  <!-- ========== SIDEBAR ========== -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Q</div>
+      <div class="brand-text">
+        <div class="brand-name">Quill AI</div>
+        <div class="brand-sub">Prompt to Report</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Quick Reports</div>
+      <div class="sidebar-item" onclick="runPrompt('Show me the enrollment funnel')">
+        <span class="item-icon">📊</span>
+        <span class="item-text">Enrollment Funnel</span>
+      </div>
+      <div class="sidebar-item" onclick="runPrompt('Compare conversion rates across all campuses')">
+        <span class="item-icon">🏫</span>
+        <span class="item-text">Campus Comparison</span>
+      </div>
+      <div class="sidebar-item" onclick="runPrompt('Show me lead sources and ROI')">
+        <span class="item-icon">💰</span>
+        <span class="item-text">Source ROI</span>
+      </div>
+      <div class="sidebar-item" onclick="runPrompt('Show me counselor performance')">
+        <span class="item-icon">👥</span>
+        <span class="item-text">Counselor Performance</span>
+      </div>
+      <div class="sidebar-item" onclick="runPrompt('Show me at-risk students')">
+        <span class="item-icon">⚠️</span>
+        <span class="item-text">At-Risk Students</span>
+      </div>
+      <div class="sidebar-item" onclick="runPrompt('Show me marketing campaign performance')">
+        <span class="item-icon">📈</span>
+        <span class="item-text">Marketing Performance</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Recent Prompts</div>
+    </div>
+    <div class="prompt-history" id="historyList"></div>
+
+    <div class="sidebar-footer">
+      <div class="powered-by">Powered by LeadSquared AI Lab</div>
+    </div>
+  </div>
+
+  <!-- ========== MAIN ========== -->
+  <div class="main-content">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <span class="page-title">Executive Insights</span>
+      </div>
+      <div class="top-bar-actions">
+        <button class="btn-icon" onclick="resetAll()" title="Reset">↻</button>
+        <button class="btn-icon" onclick="downloadPDF()" title="Download PDF">↓</button>
+      </div>
+    </div>
+
+    <!-- Alert Banner -->
+    <div class="alert-banner" id="alertBanner">
+      <span class="alert-icon" id="alertIcon"></span>
+      <div class="alert-body">
+        <div class="alert-title" id="alertTitle"></div>
+        <div class="alert-desc" id="alertDesc"></div>
+      </div>
+      <button class="alert-action" id="alertAction" onclick="investigateAlert()">Investigate →</button>
+      <span class="alert-dismiss" onclick="dismissAlert()">✕</span>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div class="content-scroll">
+
+      <!-- Prompt Input -->
+      <div class="prompt-section">
+        <div class="prompt-container">
+          <div class="prompt-input-wrap">
+            <span class="prompt-search-icon">🔍</span>
+            <input
+              class="prompt-input"
+              id="promptInput"
+              placeholder="Ask anything — e.g. Show me student drop-offs per course last quarter"
+              onkeydown="if(event.key==='Enter') generateReport()"
+            />
+          </div>
+          <button class="btn-generate" id="generateBtn" onclick="generateReport()">
+            <span id="btnText">Generate</span>
+          </button>
+        </div>
+        <div class="quick-prompts" id="quickPrompts">
+          <div class="quick-prompt" onclick="runPrompt('Show me the enrollment funnel for Spring 2026')">Enrollment funnel — Spring 2026</div>
+          <div class="quick-prompt" onclick="runPrompt('Which campus has the best conversion rate?')">Best converting campus</div>
+          <div class="quick-prompt" onclick="runPrompt('What is our cost per enrolled student by channel?')">Cost per enrolled by channel</div>
+          <div class="quick-prompt" onclick="runPrompt('Show me student drop-offs per course last quarter')">Course drop-offs</div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🪶</div>
+        <div class="empty-title">What would you like to know?</div>
+        <div class="empty-desc">Ask Quill any question about your enrollment pipeline, student data, or marketing performance. Reports are generated from live CRM and SIS data.</div>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-container" id="loadingState">
+        <div class="shimmer-card">
+          <div class="shimmer shimmer-title"></div>
+          <div class="shimmer shimmer-text"></div>
+          <div class="shimmer shimmer-text-short"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+            <div class="shimmer shimmer-metric"></div>
+            <div class="shimmer shimmer-metric"></div>
+            <div class="shimmer shimmer-metric"></div>
+          </div>
+          <div class="shimmer shimmer-chart"></div>
+        </div>
+        <div class="loading-label">Querying data sources and generating report...</div>
+      </div>
+
+      <!-- Report -->
+      <div class="report-container" id="reportContainer"></div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================
+   CONFIGURATION
+===================================================== */
+const API_BASE = window.location.origin.includes("onrender.com")
+  ? window.location.origin
+  : "https://quill-ai-px2m.onrender.com";
+
+let currentReport = null;
+let currentAlertPrompt = null;
+
+/* =====================================================
+   PROMPT HISTORY
+===================================================== */
+function loadHistory() {
+  const list = JSON.parse(localStorage.getItem("quillHistory") || "[]");
+  const el = document.getElementById("historyList");
+  el.innerHTML = "";
+  list.slice(0, 15).forEach(p => {
+    const item = document.createElement("div");
+    item.className = "history-item";
+    item.textContent = p;
+    item.onclick = () => runPrompt(p);
+    el.appendChild(item);
+  });
+}
+
+function saveHistory(prompt) {
+  let list = JSON.parse(localStorage.getItem("quillHistory") || "[]");
+  list = list.filter(x => x !== prompt);
+  list.unshift(prompt);
+  list = list.slice(0, 30);
+  localStorage.setItem("quillHistory", JSON.stringify(list));
+  loadHistory();
+}
+
+/* =====================================================
+   PROACTIVE INSIGHTS
+===================================================== */
+async function loadProactiveInsights() {
+  try {
+    const res = await fetch(`${API_BASE}/api/proactive-insights`);
+    const data = await res.json();
+    if (data.insights && data.insights.length > 0) {
+      const insight = data.insights[0];
+      const banner = document.getElementById("alertBanner");
+      banner.className = `alert-banner visible ${insight.severity}`;
+      document.getElementById("alertIcon").textContent =
+        insight.severity === "critical" ? "🔴" : insight.severity === "warning" ? "🟡" : "🔵";
+      document.getElementById("alertTitle").textContent = insight.title;
+      document.getElementById("alertDesc").textContent = insight.description;
+      currentAlertPrompt = insight.investigate_prompt;
+    }
+  } catch (e) {
+    console.log("Proactive insights not available");
+  }
+}
+
+function dismissAlert() {
+  document.getElementById("alertBanner").classList.remove("visible");
+}
+
+function investigateAlert() {
+  if (currentAlertPrompt) runPrompt(currentAlertPrompt);
+}
+
+/* =====================================================
+   GENERATE REPORT
+===================================================== */
+function runPrompt(text) {
+  document.getElementById("promptInput").value = text;
+  generateReport();
+}
+
+async function generateReport() {
+  const prompt = document.getElementById("promptInput").value.trim();
+  if (!prompt) return;
+
+  saveHistory(prompt);
+
+  // Show loading
+  document.getElementById("emptyState").style.display = "none";
+  document.getElementById("reportContainer").classList.remove("visible");
+  document.getElementById("loadingState").classList.add("visible");
+  document.getElementById("quickPrompts").style.display = "none";
+
+  const btn = document.getElementById("generateBtn");
+  btn.disabled = true;
+  document.getElementById("btnText").innerHTML = '<span class="spinner"></span>';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+
+    document.getElementById("loadingState").classList.remove("visible");
+
+    if (data.success && data.report) {
+      currentReport = data.report;
+      renderReport(data.report, data.elapsed_seconds);
+    } else {
+      renderError(data.error || "Report generation failed", data.fallback);
+    }
+  } catch (err) {
+    document.getElementById("loadingState").classList.remove("visible");
+    renderError(err.message);
+  }
+
+  btn.disabled = false;
+  document.getElementById("btnText").textContent = "Generate";
+}
+
+/* =====================================================
+   RENDER REPORT
+===================================================== */
+function renderReport(report, elapsed) {
+  const container = document.getElementById("reportContainer");
+
+  // Source badges
+  const badges = (report.data_sources || []).map(s => {
+    const cls = s.badge === "CRM" ? "crm" : s.badge === "SIS" ? "sis" : "external";
+    return `<span class="source-badge ${cls}">● ${s.badge}</span>`;
+  }).join("");
+
+  // KPI cards
+  const kpis = (report.metrics || []).map(m => {
+    const trendClass = m.trend === "up" ? "up" : m.trend === "down" ? "down" : "flat";
+    const trendIcon = m.trend === "up" ? "↑" : m.trend === "down" ? "↓" : "→";
+    const trendHtml = m.change_pct
+      ? `<div class="kpi-trend ${trendClass}">${trendIcon} ${m.change_pct}</div>`
+      : "";
+    return `
+      <div class="kpi-card">
+        <div class="kpi-label">${m.label}</div>
+        <div class="kpi-value">${m.value}</div>
+        ${trendHtml}
+      </div>`;
+  }).join("");
+
+  // Narrative sections
+  const narratives = (report.narrative_sections || []).map(n => {
+    const badge = n.source_badge || "CRM";
+    return `
+      <div class="narrative-section" data-source="${badge}">
+        <div class="narrative-heading">
+          ${n.heading}
+          <span class="source-badge ${badge.toLowerCase()}" style="font-size:9px;">● ${badge}</span>
+        </div>
+        <div class="narrative-body">${n.body}</div>
+      </div>`;
+  }).join("");
+
+  // Recommended actions
+  const actions = (report.recommended_actions || []).map(a => `
+    <div class="action-item">
+      <span class="action-priority ${a.priority}">${a.priority}</span>
+      <div class="action-content">
+        <div class="action-text">${a.action}</div>
+        <div class="action-rationale">${a.rationale || ""}</div>
+      </div>
+    </div>`).join("");
+
+  // Suggestive prompts
+  const suggestions = (report.suggestive_prompts || []).map(s =>
+    `<div class="suggestive-chip" onclick="runPrompt('${s.replace(/'/g, "\\'")}')">${s}</div>`
+  ).join("");
+
+  container.innerHTML = `
+    <div class="report-card">
+      <div class="report-header">
+        <div class="report-meta">
+          ${badges}
+          <span class="report-time">${elapsed ? `Generated in ${elapsed}s` : ""}</span>
+        </div>
+        <div class="report-title">${report.report_title || "Report"}</div>
+        <div class="report-summary">${report.summary || ""}</div>
+      </div>
+
+      <div class="report-toolbar">
+        <button class="toolbar-btn" onclick="downloadPDF()">↓ Download PDF</button>
+        <button class="toolbar-btn" onclick="resetAll()">↻ New Report</button>
+      </div>
+
+      <div class="report-body" id="reportBody">
+        ${kpis ? `<div class="kpi-grid">${kpis}</div>` : ""}
+
+        ${report.chart ? `
+          <div class="chart-section">
+            <div class="chart-wrapper">
+              <canvas id="reportChart"></canvas>
+            </div>
+          </div>` : ""}
+
+        ${narratives ? `
+          <div class="section-label">Analysis</div>
+          ${narratives}` : ""}
+
+        ${actions ? `
+          <div class="actions-section">
+            <div class="section-label">Recommended Actions</div>
+            ${actions}
+          </div>` : ""}
+      </div>
+
+      ${suggestions ? `
+        <div class="suggestive-section">
+          <div class="suggestive-label">Related Reports</div>
+          <div class="suggestive-chips">${suggestions}</div>
+        </div>` : ""}
+    </div>`;
+
+  container.classList.add("visible");
+
+  // Render chart
+  if (report.chart) {
+    setTimeout(() => drawChart(report.chart), 100);
+  }
+}
+
+function renderError(message, fallback) {
+  const container = document.getElementById("reportContainer");
+  const suggestions = fallback?.suggestive_prompts || [];
+  const chips = suggestions.map(s =>
+    `<div class="suggestive-chip" onclick="runPrompt('${s.replace(/'/g, "\\'")}')">${s}</div>`
+  ).join("");
+
+  container.innerHTML = `
+    <div class="report-card">
+      <div class="report-header">
+        <div class="report-title">Unable to Generate Report</div>
+        <div class="report-summary">${message}. Try rephrasing your question or use one of the suggestions below.</div>
+      </div>
+      ${chips ? `
+        <div class="suggestive-section">
+          <div class="suggestive-label">Try These Instead</div>
+          <div class="suggestive-chips">${chips}</div>
+        </div>` : ""}
+    </div>`;
+  container.classList.add("visible");
+}
+
+/* =====================================================
+   CHART RENDERING
+===================================================== */
+let chartInstance = null;
+
+function drawChart(chartConfig) {
+  const ctx = document.getElementById("reportChart")?.getContext("2d");
+  if (!ctx) return;
+
+  if (chartInstance) chartInstance.destroy();
+
+  // Map report chart type to Chart.js type
+  let chartType = chartConfig.type || "bar";
+  if (chartType === "funnel" || chartType === "horizontalBar") chartType = "bar";
+  if (chartType === "combo") chartType = "bar";
+
+  const isHorizontal = chartConfig.type === "horizontalBar" || chartConfig.type === "funnel";
+
+  // Color palette
+  const colors = [
+    "#2563EB", "#7C3AED", "#059669", "#D97706", "#DC2626",
+    "#0891B2", "#4F46E5", "#EA580C", "#16A34A", "#9333EA"
+  ];
+
+  const datasets = (chartConfig.datasets || []).map((ds, i) => ({
+    ...ds,
+    backgroundColor: ds.backgroundColor || colors[i % colors.length],
+    borderColor: ds.borderColor || "transparent",
+    borderRadius: chartType === "bar" ? 4 : 0,
+    borderWidth: chartType === "line" ? 2 : 0,
+    tension: 0.3,
+    fill: chartType === "line" ? false : undefined,
+    pointRadius: chartType === "line" ? 4 : undefined,
+    pointBackgroundColor: chartType === "line" ? (ds.backgroundColor || colors[i]) : undefined,
+  }));
+
+  chartInstance = new Chart(ctx, {
+    type: chartType,
+    data: {
+      labels: chartConfig.labels || [],
+      datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: isHorizontal ? "y" : "x",
+      plugins: {
+        legend: {
+          display: datasets.length > 1,
+          position: "top",
+          labels: {
+            font: { family: "'DM Sans'", size: 12 },
+            usePointStyle: true,
+            padding: 16
+          }
+        },
+        title: {
+          display: !!chartConfig.title,
+          text: chartConfig.title || "",
+          font: { family: "'DM Sans'", size: 14, weight: "600" },
+          padding: { bottom: 16 }
+        }
+      },
+      scales: chartType === "pie" || chartType === "doughnut" ? {} : {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: "'DM Sans'", size: 11 }, color: "#9CA3AF" }
+        },
+        y: {
+          grid: { color: "#F0F2F5" },
+          ticks: { font: { family: "'DM Sans'", size: 11 }, color: "#9CA3AF" },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+/* =====================================================
+   UTILITIES
+===================================================== */
+function resetAll() {
+  document.getElementById("promptInput").value = "";
+  document.getElementById("reportContainer").classList.remove("visible");
+  document.getElementById("reportContainer").innerHTML = "";
+  document.getElementById("loadingState").classList.remove("visible");
+  document.getElementById("emptyState").style.display = "block";
+  document.getElementById("quickPrompts").style.display = "flex";
+  currentReport = null;
+}
+
+function downloadPDF() {
+  const body = document.getElementById("reportBody");
+  if (!body || !body.innerHTML.trim()) return alert("No report to download");
+
+  const opt = {
+    margin: [0.5, 0.5],
+    filename: `quill-report-${Date.now()}.pdf`,
+    image: { type: "jpeg", quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
+  };
+
+  html2pdf().set(opt).from(body).save();
+}
+
+/* =====================================================
+   INIT
+===================================================== */
+loadHistory();
+loadProactiveInsights();
+</script>
+
+</body>
+</html>
