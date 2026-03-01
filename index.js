@@ -7,6 +7,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Allow iframe embedding in LeadSquared
+app.use((req, res, next) => {
+  res.removeHeader('X-Frame-Options');
+  res.setHeader('Content-Security-Policy', "frame-ancestors *");
+  next();
+});
+
 /* =====================================================
    CONFIGURATION
 ===================================================== */
