@@ -43,14 +43,14 @@ const MAVIS_TABLES = {
 ===================================================== */
 
 const MARKETING_CAMPAIGNS = [
-  { campaign_name: "International Relations — Facebook Ads", platform: "Facebook Ads", program: "International Relations", spend: 48000, leads_generated: 156, cost_per_lead: 307.69, enrolled: 18, cost_per_enrolled: 2666.67, period: "Fall" },
-  { campaign_name: "Business — Pay per Click Ads", platform: "Pay per Click Ads", program: "Business", spend: 32000, leads_generated: 210, cost_per_lead: 152.38, enrolled: 31, cost_per_enrolled: 1032.26, period: "Fall" },
-  { campaign_name: "Criminal Justice — Facebook Ads", platform: "Facebook Ads", program: "Criminal Justice", spend: 28000, leads_generated: 98, cost_per_lead: 285.71, enrolled: 12, cost_per_enrolled: 2333.33, period: "Fall" },
-  { campaign_name: "Psychology — Inbound Email", platform: "Inbound Email", program: "Psychology", spend: 5200, leads_generated: 87, cost_per_lead: 59.77, enrolled: 22, cost_per_enrolled: 236.36, period: "Fall" },
-  { campaign_name: "Biology — Social Media", platform: "Social Media", program: "Biology", spend: 15000, leads_generated: 134, cost_per_lead: 111.94, enrolled: 14, cost_per_enrolled: 1071.43, period: "Fall" },
-  { campaign_name: "Brand Awareness — Pay per Click Ads", platform: "Pay per Click Ads", program: "General", spend: 22000, leads_generated: 320, cost_per_lead: 68.75, enrolled: 0, cost_per_enrolled: null, period: "Fall" },
-  { campaign_name: "Open House — Event / Webinar", platform: "Event / Webinar", program: "General", spend: 3500, leads_generated: 45, cost_per_lead: 77.78, enrolled: 15, cost_per_enrolled: 233.33, period: "Spring" },
-  { campaign_name: "Architecture — Trade Show", platform: "Trade Show", program: "Architecture", spend: 8000, leads_generated: 62, cost_per_lead: 129.03, enrolled: 20, cost_per_enrolled: 400.00, period: "Spring" },
+  { campaign_name: "Medical Assisting — Facebook Ads", platform: "Facebook Ads", program: "Medical Assisting", spend: 48000, leads_generated: 156, cost_per_lead: 307.69, started: 18, cost_per_start: 2666.67, period: "Fall" },
+  { campaign_name: "Business — Pay per Click Ads", platform: "Pay per Click Ads", program: "Business", spend: 32000, leads_generated: 210, cost_per_lead: 152.38, started: 31, cost_per_start: 1032.26, period: "Fall" },
+  { campaign_name: "HVAC Technology — Facebook Ads", platform: "Facebook Ads", program: "HVAC Technology", spend: 28000, leads_generated: 98, cost_per_lead: 285.71, started: 12, cost_per_start: 2333.33, period: "Fall" },
+  { campaign_name: "Cosmetology — Inbound Email", platform: "Inbound Email", program: "Cosmetology", spend: 5200, leads_generated: 87, cost_per_lead: 59.77, started: 22, cost_per_start: 236.36, period: "Fall" },
+  { campaign_name: "Automotive Technology — Social Media", platform: "Social Media", program: "Automotive Technology", spend: 15000, leads_generated: 134, cost_per_lead: 111.94, started: 14, cost_per_start: 1071.43, period: "Fall" },
+  { campaign_name: "Brand Awareness — Pay per Click Ads", platform: "Pay per Click Ads", program: "General", spend: 22000, leads_generated: 320, cost_per_lead: 68.75, started: 0, cost_per_start: null, period: "Fall" },
+  { campaign_name: "Open House — Event / Webinar", platform: "Event / Webinar", program: "General", spend: 3500, leads_generated: 45, cost_per_lead: 77.78, started: 15, cost_per_start: 233.33, period: "Spring" },
+  { campaign_name: "Welding — Trade Show", platform: "Trade Show", program: "Welding", spend: 8000, leads_generated: 62, cost_per_lead: 129.03, started: 20, cost_per_start: 400.00, period: "Spring" },
 ];
 
 // Placeholder for IPEDS / BLS if needed later
@@ -62,15 +62,15 @@ const LABOR_MARKET = {};     // TBD
 ===================================================== */
 
 const REPORT_TYPES = [
-  { id: "enrollment_funnel", name: "Enrollment Funnel", description: "Pipeline from Inquiry → Enrolled with conversion rates", data_sources: ["crm"] },
+  { id: "enrollment_funnel", name: "Admissions Funnel", description: "Pipeline from Inquiry → Started with conversion rates", data_sources: ["crm"] },
   { id: "campus_comparison", name: "Campus Comparison", description: "Side-by-side metrics across campuses", data_sources: ["crm"] },
-  { id: "source_roi", name: "Source ROI Analysis", description: "Lead source performance and marketing cost-per-enrolled", data_sources: ["crm", "external"] },
-  { id: "counselor_performance", name: "Counselor Performance", description: "Conversion rates and activity by counselor", data_sources: ["crm"] },
-  { id: "program_performance", name: "Program Performance", description: "Enrollment, retention, and outcomes by academic program", data_sources: ["crm", "mavis"] },
-  { id: "course_dropoff", name: "Course Drop-off Analysis", description: "Withdrawal and failure rates by course", data_sources: ["mavis"] },
+  { id: "source_roi", name: "Source ROI Analysis", description: "Lead source performance and marketing cost-per-start", data_sources: ["crm", "external"] },
+  { id: "counselor_performance", name: "Admissions Rep Performance", description: "Conversion rates and activity by admissions rep", data_sources: ["crm"] },
+  { id: "program_performance", name: "Program Performance", description: "Starts, retention, and completion rates by program", data_sources: ["crm", "mavis"] },
+  { id: "course_dropoff", name: "Program Drop Analysis", description: "Withdrawal and drop rates by program", data_sources: ["mavis"] },
   { id: "financial_overview", name: "Financial Overview", description: "Tuition balances and financial aid disbursement", data_sources: ["mavis"] },
-  { id: "at_risk_students", name: "At-Risk Students", description: "Students with low engagement, stale activity, or academic issues", data_sources: ["crm", "mavis"] },
-  { id: "marketing_performance", name: "Marketing Performance", description: "Campaign spend, CPL, and ROI by channel", data_sources: ["external"] },
+  { id: "at_risk_students", name: "At-Risk Students", description: "Students with low engagement, attendance issues, or at risk of not starting", data_sources: ["crm", "mavis"] },
+  { id: "marketing_performance", name: "Marketing Performance", description: "Campaign spend, CPL, cost per start, and ROI by channel", data_sources: ["external"] },
   { id: "general", name: "General Report", description: "Freeform report using all available data when no specific type matches", data_sources: ["crm", "mavis", "external"] },
 ];
 
@@ -85,18 +85,29 @@ async function classifyIntent(userPrompt) {
     messages: [
       {
         role: "system",
-        content: `You are a report intent classifier for a university admissions CRM. Given a user's natural language prompt, classify it into a report type and extract filters.
+        content: `You are a report intent classifier for a career school admissions CRM. Given a user's natural language prompt, classify it into a report type and extract filters.
+
+The user base spans career education institutions — for-profit career schools, beauty/cosmetology academies, healthcare training programs, culinary institutes, trade/technical schools, and some traditional universities. Use career school terminology: "starts" (not enrollments), "programs" (not majors/degrees), "admissions reps" (not counselors), "campus" for multi-location context, "completion rate" (not graduation rate), "program drops" (not course drop-offs), "term" (not semester).
 
 Available report types: ${REPORT_TYPES.map(r => `${r.id} (${r.name})`).join(", ")}
 
 If the prompt doesn't clearly match any specific type, use "general".
+
+Example queries and mappings:
+- "Inquiry to start funnel" → enrollment_funnel
+- "Admissions rep performance" → counselor_performance
+- "Cost per start by channel" → source_roi
+- "Program drops by campus" → course_dropoff
+- "Start rate by lead source" → source_roi
+- "Speed to contact" → counselor_performance
+- "Attendance trends by program" → program_performance
 
 Return JSON only:
 {
   "report_type": "one of the report type IDs",
   "filters": {
     "campus": "California Campus" | "Dallas Campus" | "Michigan Campus" | "New York Campus" | "Washington Campus" | null,
-    "program": "Accounting" | "Architecture" | "Art and Design" | "Biology" | "Business" | "Cosmetology" | "Criminal Justice" | "Psychology" | "International Relations" | null,
+    "program": "Accounting" | "HVAC Technology" | "Medical Assisting" | "Cosmetology" | "Business" | "Automotive Technology" | "Welding" | "Dental Assisting" | "IT" | null,
     "term": "Fall" | "Spring" | "Summer" | null,
     "source": "Social Media" | "Inbound Email" | "Inbound Phone call" | "Pay per Click Ads" | "Trade Show" | "B2B Referral" | "Website Form" | "Facebook Ads" | "Chatbot" | "Event / Webinar" | "Website" | null,
     "counselor": null,
@@ -369,10 +380,10 @@ function identifyAtRiskLeads(leads) {
     if (readinessScore > 0 && readinessScore < 30) {
       reasons.push(`Low readiness score: ${readinessScore}`);
     }
-    // Accepted but no deposit
+    // Accepted but no enrollment agreement signed
     const stage = lead.ProspectStage;
     if (stage === "Application Completed" && lead.mx_Enrollment_Deposit_Paid !== "Yes") {
-      reasons.push("Application completed but deposit not paid");
+      reasons.push("Application completed but enrollment agreement not signed");
     }
 
     if (reasons.length > 0) {
@@ -490,8 +501,30 @@ async function generateReport(userPrompt, intent, dataContext) {
     messages: [
       {
         role: "system",
-        content: `You are Quill AI, an enterprise reporting intelligence agent for a university admissions office.
+        content: `You are Quill AI, an enterprise reporting intelligence agent for career school admissions operations.
 You generate data-driven reports based on REAL data provided to you. Never fabricate numbers — use only the data context given.
+
+IMPORTANT — CAREER SCHOOL TERMINOLOGY:
+You are writing for career education institutions — for-profit career schools, beauty/cosmetology academies, healthcare training programs, culinary institutes, trade/technical schools, and some traditional universities. Always use this terminology:
+- "Starts" not "enrollments" (a "start" = student actually began attending)
+- "Start rate" not "enrollment rate" or "yield rate"
+- "Cost per start" not "cost per enrollment"
+- "Programs" not "majors" or "degrees" (e.g., "HVAC Technology program," "Medical Assisting program")
+- "Program area" not "department" (e.g., Skilled Trades, Health Sciences, Automotive, IT, Cosmetology)
+- "Term" not "semester" (career schools run 8-16 week terms)
+- "Admissions reps" not "counselors"
+- "Instructors" not "professors" or "faculty"
+- "Campus President" or "Director of Education" not "Dean"
+- "Completion rate" or "program completion rate" not "graduation rate"
+- "Program drops" not "course drop-offs"
+- "Enrollment agreement signed" / "EA signed" not "tuition deposit"
+- "Accepted" or "Packaged" (financial aid packaged) not "Admitted"
+- Reference "attendance rate" as a key retention predictor
+- Reference "VA benefits" and "WIA/WIOA funding" as financial aid categories where relevant
+- Reference "practical training hours" (covers externships, clinicals, clinic floor hours, and practicums) as program milestones where relevant
+- Reference "career services placement rate" as a regulated outcome metric where relevant
+- Reference "speed to contact" and "contact rate" as admissions KPIs where relevant
+Never reference: dormitories/housing, alumni giving, endowments, Greek life, athletics, research grants.
 
 The user asked: "${userPrompt}"
 Classified report type: ${intent.report_type}
@@ -534,11 +567,12 @@ Generate a comprehensive report. Return JSON only with this exact schema:
 
 RULES:
 - Every number must come from the data context. If data is missing, say "Data unavailable" rather than guessing.
-- Chart type should match the report type (funnel for enrollment, bar for comparison, combo for ROI, horizontalBar for rankings)
-- Suggestive prompts must be contextually related to the current report
+- Chart type should match the report type (funnel for admissions pipeline, bar for comparison, combo for ROI, horizontalBar for rankings)
+- Suggestive prompts must be contextually related to the current report and use career school terminology
 - Proactive alert should flag something concerning in the data (or null if nothing notable)
 - Keep narrative sections to 2-4 sections max
-- Each recommended action must cite specific data points`
+- Each recommended action must cite specific data points
+- Always use "starts" not "enrollments", "programs" not "majors", "admissions reps" not "counselors", "completion rate" not "graduation rate"`
       },
       { role: "user", content: userPrompt }
     ],
@@ -573,7 +607,7 @@ async function generateProactiveInsights() {
         title: `${staleLeads.length} students haven't engaged in 21+ days`,
         description: acceptedStale.length > 0
           ? `${acceptedStale.length} are in Accepted stage — at high risk of melt.`
-          : `Spread across multiple pipeline stages. Review counselor follow-up cadence.`,
+          : `Spread across multiple pipeline stages. Review admissions rep follow-up cadence.`,
         investigate_prompt: "Show me at-risk students with no activity in 21 days"
       });
     }
@@ -587,9 +621,9 @@ async function generateProactiveInsights() {
       if (yieldRate < 70) {
         insights.push({
           severity: yieldRate < 50 ? "critical" : "warning",
-          title: `Yield rate at ${yieldRate.toFixed(0)}% — below target`,
-          description: `Only ${enrolled} of ${completed} students with completed applications have enrolled. ${completed - enrolled} students are at risk of not converting.`,
-          investigate_prompt: "Show me students with completed applications who haven't enrolled"
+          title: `Start rate at ${yieldRate.toFixed(0)}% — below target`,
+          description: `Only ${enrolled} of ${completed} students with completed applications have started. ${completed - enrolled} are at risk of not starting.`,
+          investigate_prompt: "Show me students with completed applications who haven't started"
         });
       }
     }
@@ -617,13 +651,13 @@ async function generateProactiveInsights() {
         insights.push({
           severity: "warning",
           title: `${code} has a ${rate}% drop rate`,
-          description: `${stats.dropped} of ${stats.total} students have dropped or withdrawn. This is significantly above the institutional average.`,
-          investigate_prompt: `Show me student drop-offs for ${code}`
+          description: `${stats.dropped} of ${stats.total} students have dropped or withdrawn from this program. This is significantly above the institutional average.`,
+          investigate_prompt: `Show me program drops for ${code}`
         });
       }
     }
 
-    // Check 4: Low-performing counselor
+    // Check 4: Low-performing admissions rep
     const counselorMetrics = buildCounselorMetrics(allLeads);
     const lowPerformers = Object.entries(counselorMetrics)
       .filter(([name, m]) => name !== "Unassigned" && m.total >= 10 && parseFloat(m.conversion_rate) < 15)
@@ -634,8 +668,8 @@ async function generateProactiveInsights() {
       insights.push({
         severity: "info",
         title: `${name}: ${metrics.conversion_rate} conversion rate`,
-        description: `${name} has ${metrics.total} assigned leads but only ${metrics.enrolled} enrolled. Consider reviewing assignment load or providing coaching.`,
-        investigate_prompt: `Show me counselor performance breakdown for ${name}`
+        description: `${name} has ${metrics.total} assigned leads but only ${metrics.enrolled} started. Consider reviewing assignment load or providing coaching.`,
+        investigate_prompt: `Show me admissions rep performance breakdown for ${name}`
       });
     }
 
@@ -703,9 +737,9 @@ app.post("/api/report", async (req, res) => {
         chart: null,
         recommended_actions: [],
         suggestive_prompts: [
-          "Show me the enrollment funnel for Fall 2026",
-          "Compare conversion rates across campuses",
-          "Which lead sources have the best ROI?"
+          "Show me the admissions funnel for Fall 2026",
+          "Compare start rates across campuses",
+          "Which lead sources have the best cost per start?"
         ]
       }
     });
