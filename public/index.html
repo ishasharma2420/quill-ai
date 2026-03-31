@@ -894,21 +894,21 @@
 
     <div class="sidebar-section">
       <div class="sidebar-label">Quick Reports</div>
-      <div class="sidebar-item" onclick="runPrompt('Show me the enrollment funnel')">
+      <div class="sidebar-item" onclick="runPrompt('Show me the admissions funnel')">
         <span class="item-icon">📊</span>
-        <span class="item-text">Enrollment Funnel</span>
+        <span class="item-text">Admissions Funnel</span>
       </div>
-      <div class="sidebar-item" onclick="runPrompt('Compare conversion rates across all campuses')">
+      <div class="sidebar-item" onclick="runPrompt('Compare start rates across all campuses')">
         <span class="item-icon">🏫</span>
         <span class="item-text">Campus Comparison</span>
       </div>
-      <div class="sidebar-item" onclick="runPrompt('Show me lead sources and ROI')">
+      <div class="sidebar-item" onclick="runPrompt('Show me lead sources and cost per start')">
         <span class="item-icon">💰</span>
         <span class="item-text">Source ROI</span>
       </div>
-      <div class="sidebar-item" onclick="runPrompt('Show me counselor performance')">
+      <div class="sidebar-item" onclick="runPrompt('Show me admissions rep performance')">
         <span class="item-icon">👥</span>
-        <span class="item-text">Counselor Performance</span>
+        <span class="item-text">Admissions Rep Performance</span>
       </div>
       <div class="sidebar-item" onclick="runPrompt('Show me at-risk students')">
         <span class="item-icon">⚠️</span>
@@ -965,7 +965,7 @@
             <input
               class="prompt-input"
               id="promptInput"
-              placeholder="Ask anything — e.g. Show me student drop-offs per course last quarter"
+              placeholder="Ask anything — e.g., Show me program drops by campus last quarter"
               onkeydown="if(event.key==='Enter') generateReport()"
             />
           </div>
@@ -974,10 +974,10 @@
           </button>
         </div>
         <div class="quick-prompts" id="quickPrompts">
-          <div class="quick-prompt" onclick="runPrompt('Show me the enrollment funnel for Spring 2026')">Enrollment funnel — Spring 2026</div>
-          <div class="quick-prompt" onclick="runPrompt('Which campus has the best conversion rate?')">Best converting campus</div>
-          <div class="quick-prompt" onclick="runPrompt('What is our cost per enrolled student by channel?')">Cost per enrolled by channel</div>
-          <div class="quick-prompt" onclick="runPrompt('Show me student drop-offs per course last quarter')">Course drop-offs</div>
+          <div class="quick-prompt" onclick="runPrompt('Inquiry to start funnel — January 2026 cohort')">Inquiry to start funnel — January 2026 cohort</div>
+          <div class="quick-prompt" onclick="runPrompt('Which campus has the highest start rate?')">Highest converting campus</div>
+          <div class="quick-prompt" onclick="runPrompt('What is our cost per start by channel?')">Cost per start by channel</div>
+          <div class="quick-prompt" onclick="runPrompt('Show me program drops by campus')">Program drops by campus</div>
         </div>
       </div>
 
@@ -985,7 +985,7 @@
       <div class="empty-state" id="emptyState">
         <div class="empty-icon">🪶</div>
         <div class="empty-title">What would you like to know?</div>
-        <div class="empty-desc">Ask Quill any question about your enrollment pipeline, student data, or marketing performance. Reports are generated from live CRM and SIS data.</div>
+        <div class="empty-desc">Ask Quill any question about your admissions pipeline, student data, or marketing performance. Reports are generated from live CRM and SIS data.</div>
       </div>
 
       <!-- Loading -->
