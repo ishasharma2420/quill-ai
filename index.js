@@ -737,7 +737,7 @@ app.post("/api/report", async (req, res) => {
         chart: null,
         recommended_actions: [],
         suggestive_prompts: [
-          "Show me the admissions funnel for Fall 2026",
+          "Show me the admissions funnel for the current cohort",
           "Compare start rates across campuses",
           "Which lead sources have the best cost per start?"
         ]
