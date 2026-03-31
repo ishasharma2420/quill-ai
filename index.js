@@ -44,7 +44,7 @@ const MAVIS_TABLES = {
 
 const MARKETING_CAMPAIGNS = [
   { campaign_name: "Medical Assisting — Facebook Ads", platform: "Facebook Ads", program: "Medical Assisting", spend: 48000, leads_generated: 156, cost_per_lead: 307.69, started: 18, cost_per_start: 2666.67, period: "Fall" },
-  { campaign_name: "Business — Pay per Click Ads", platform: "Pay per Click Ads", program: "Business", spend: 32000, leads_generated: 210, cost_per_lead: 152.38, started: 31, cost_per_start: 1032.26, period: "Fall" },
+  { campaign_name: "Electrical Technology — Pay per Click Ads", platform: "Pay per Click Ads", program: "Electrical Technology", spend: 32000, leads_generated: 210, cost_per_lead: 152.38, started: 31, cost_per_start: 1032.26, period: "Fall" },
   { campaign_name: "HVAC Technology — Facebook Ads", platform: "Facebook Ads", program: "HVAC Technology", spend: 28000, leads_generated: 98, cost_per_lead: 285.71, started: 12, cost_per_start: 2333.33, period: "Fall" },
   { campaign_name: "Cosmetology — Inbound Email", platform: "Inbound Email", program: "Cosmetology", spend: 5200, leads_generated: 87, cost_per_lead: 59.77, started: 22, cost_per_start: 236.36, period: "Fall" },
   { campaign_name: "Automotive Technology — Social Media", platform: "Social Media", program: "Automotive Technology", spend: 15000, leads_generated: 134, cost_per_lead: 111.94, started: 14, cost_per_start: 1071.43, period: "Fall" },
@@ -107,7 +107,7 @@ Return JSON only:
   "report_type": "one of the report type IDs",
   "filters": {
     "campus": "California Campus" | "Dallas Campus" | "Michigan Campus" | "New York Campus" | "Washington Campus" | null,
-    "program": "Accounting" | "HVAC Technology" | "Medical Assisting" | "Cosmetology" | "Business" | "Automotive Technology" | "Welding" | "Dental Assisting" | "IT" | null,
+    "program": "Medical Assisting" | "HVAC Technology" | "Cosmetology" | "Automotive Technology" | "Welding" | "Dental Hygiene" | "Nursing/Allied Health" | "CDL/Commercial Driving" | "Electrical Technology" | "Accounting" | null,
     "term": "Fall" | "Spring" | "Summer" | null,
     "source": "Social Media" | "Inbound Email" | "Inbound Phone call" | "Pay per Click Ads" | "Trade Show" | "B2B Referral" | "Website Form" | "Facebook Ads" | "Chatbot" | "Event / Webinar" | "Website" | null,
     "counselor": null,
