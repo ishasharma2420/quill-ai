@@ -921,6 +921,22 @@
     </div>
 
     <div class="sidebar-section">
+      <div class="sidebar-label">Pipeline Intelligence</div>
+      <div class="sidebar-item" onclick="runPrompt('How many more leads do I need to hit 50 starts for the May 2026 cohort?')">
+        <span class="item-icon">🎯</span>
+        <span class="item-text">Gap-to-Goal</span>
+      </div>
+      <div class="sidebar-item" onclick="runPrompt('With our current pipeline, how many starts can we expect for the May 2026 cohort?')">
+        <span class="item-icon">🔮</span>
+        <span class="item-text">Start Projection</span>
+      </div>
+      <div class="sidebar-item" onclick="runPrompt('Show me stage-by-stage conversion velocity and time to start')">
+        <span class="item-icon">⚡</span>
+        <span class="item-text">Conversion Velocity</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
       <div class="sidebar-label">Recent Prompts</div>
     </div>
     <div class="prompt-history" id="historyList"></div>
@@ -965,7 +981,7 @@
             <input
               class="prompt-input"
               id="promptInput"
-              placeholder="Ask anything — e.g., Show me program drops by campus last quarter"
+              placeholder="Ask anything — e.g., How many more leads do I need to hit 50 starts for May?"
               onkeydown="if(event.key==='Enter') generateReport()"
             />
           </div>
@@ -974,10 +990,10 @@
           </button>
         </div>
         <div class="quick-prompts" id="quickPrompts">
-          <div class="quick-prompt" onclick="runPrompt('Inquiry to start funnel — January 2026 cohort')">Inquiry to start funnel — January 2026 cohort</div>
-          <div class="quick-prompt" onclick="runPrompt('Which campus has the highest start rate?')">Highest converting campus</div>
+          <div class="quick-prompt" onclick="runPrompt('Inquiry to start funnel — May 2026 cohort')">Inquiry to start funnel — May 2026 cohort</div>
+          <div class="quick-prompt" onclick="runPrompt('How many more leads do I need to hit 50 starts for May?')">Gap-to-goal for May start</div>
           <div class="quick-prompt" onclick="runPrompt('What is our cost per start by channel?')">Cost per start by channel</div>
-          <div class="quick-prompt" onclick="runPrompt('Show me program drops by campus')">Program drops by campus</div>
+          <div class="quick-prompt" onclick="runPrompt('Show me stage-by-stage conversion velocity')">Conversion velocity by stage</div>
         </div>
       </div>
 
