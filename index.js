@@ -71,6 +71,9 @@ const REPORT_TYPES = [
   { id: "financial_overview", name: "Financial Overview", description: "Tuition balances and financial aid disbursement", data_sources: ["mavis"] },
   { id: "at_risk_students", name: "At-Risk Students", description: "Students with low engagement, attendance issues, or at risk of not starting", data_sources: ["crm", "mavis"] },
   { id: "marketing_performance", name: "Marketing Performance", description: "Campaign spend, CPL, cost per start, and ROI by channel", data_sources: ["external"] },
+  { id: "pipeline_gap_to_goal", name: "Gap-to-Goal", description: "How many more leads are needed to hit a start target for a specific cohort, using historical stage-by-stage conversion rates", data_sources: ["crm"] },
+  { id: "pipeline_start_projection", name: "Start Projection", description: "Projected total starts for a cohort based on current pipeline distribution and historical conversion rates", data_sources: ["crm"] },
+  { id: "conversion_velocity", name: "Conversion Velocity", description: "Average time between pipeline stages and projected conversions within the enrollment window", data_sources: ["crm"] },
   { id: "general", name: "General Report", description: "Freeform report using all available data when no specific type matches", data_sources: ["crm", "mavis", "external"] },
 ];
 
@@ -101,12 +104,22 @@ Example queries and mappings:
 - "Start rate by lead source" → source_roi
 - "Speed to contact" → counselor_performance
 - "Attendance trends by program" → program_performance
+- "How many more leads do I need for May start" → pipeline_gap_to_goal
+- "How many leads to hit 50 enrollments for May" → pipeline_gap_to_goal
+- "Gap to goal for the May 2026 cohort" → pipeline_gap_to_goal
+- "With current pipeline how many starts can we expect for May" → pipeline_start_projection
+- "Projected starts for the May cohort" → pipeline_start_projection
+- "What is our expected yield for May 2026" → pipeline_start_projection
+- "Stage by stage conversion times" → conversion_velocity
+- "How long does it take to go from inquiry to start" → conversion_velocity
+- "Conversion velocity by stage" → conversion_velocity
+- "How many students will convert in the enrollment period" → conversion_velocity
 
 Return JSON only:
 {
   "report_type": "one of the report type IDs",
   "filters": {
-    "campus": "California Campus" | "Dallas Campus" | "Michigan Campus" | "New York Campus" | "Washington Campus" | null,
+    "campus": "Los Angeles Campus" | "San Diego Campus" | "Sacramento Campus" | "San Jose Campus" | "Fresno Campus" | null,
     "program": "Medical Assisting" | "HVAC Technology" | "Cosmetology" | "Automotive Technology" | "Welding" | "Dental Hygiene" | "Nursing/Allied Health" | "CDL/Commercial Driving" | "Electrical Technology" | "Accounting" | null,
     "term": "Fall" | "Spring" | "Summer" | null,
     "source": "Social Media" | "Inbound Email" | "Inbound Phone call" | "Pay per Click Ads" | "Trade Show" | "B2B Referral" | "Website Form" | "Facebook Ads" | "Chatbot" | "Event / Webinar" | "Website" | null,
@@ -307,30 +320,51 @@ function buildFunnelData(leads) {
     stageCounts[stage] = (stageCounts[stage] || 0) + 1;
   });
 
-  // Preferred order (adjust based on actual LSQ stage configuration)
-  const preferredOrder = [
+  // Progressive funnel stages (excludes terminal/non-sequential stages)
+  const funnelStages = [
     "New Prospect", "Attempting Contact", "Engagement Initiated",
     "Application Pending", "Application Completed",
-    "Enrolled", "Disqualified", "Invalid"
+    "Enrolled"
   ];
 
+  // Terminal stages tracked separately
+  const terminalStages = ["Disqualified", "Invalid"];
+
   // Build ordered funnel from stages that actually have data
-  const orderedStages = preferredOrder.filter(s => stageCounts[s] > 0);
-  // Add any stages not in preferred order
-  Object.keys(stageCounts).forEach(s => {
-    if (!orderedStages.includes(s) && s !== "Unknown") orderedStages.push(s);
-  });
+  const orderedStages = funnelStages.filter(s => stageCounts[s] > 0);
+
+  // Total leads entering the funnel (sum of all funnel stages)
+  const totalFunnelLeads = orderedStages.reduce((sum, s) => sum + (stageCounts[s] || 0), 0)
+    + terminalStages.reduce((sum, s) => sum + (stageCounts[s] || 0), 0);
 
   const funnelWithRates = {};
   let prev = null;
   for (const stage of orderedStages) {
+    const count = stageCounts[stage] || 0;
+    // Conversion rate: this stage count / previous stage count
+    // Cap at 100% — values over 100% indicate data issues (re-engagement, stitch-ins, etc.)
+    let convRate = "—";
+    if (prev !== null && prev > 0) {
+      const rawRate = (count / prev) * 100;
+      convRate = Math.min(rawRate, 100).toFixed(1) + "%";
+    }
     funnelWithRates[stage] = {
-      count: stageCounts[stage] || 0,
-      conversion_from_previous: prev !== null && prev > 0
-        ? (((stageCounts[stage] || 0) / prev) * 100).toFixed(1) + "%"
-        : "—"
+      count,
+      conversion_from_previous: convRate,
+      pct_of_total: totalFunnelLeads > 0 ? ((count / totalFunnelLeads) * 100).toFixed(1) + "%" : "—"
     };
-    prev = stageCounts[stage] || 0;
+    prev = count;
+  }
+
+  // Add terminal stages without conversion rates
+  for (const stage of terminalStages) {
+    if (stageCounts[stage] > 0) {
+      funnelWithRates[stage] = {
+        count: stageCounts[stage],
+        conversion_from_previous: "—",
+        pct_of_total: totalFunnelLeads > 0 ? ((stageCounts[stage] / totalFunnelLeads) * 100).toFixed(1) + "%" : "—"
+      };
+    }
   }
 
   return funnelWithRates;
@@ -406,6 +440,209 @@ function identifyAtRiskLeads(leads) {
 }
 
 /* =====================================================
+   PIPELINE INTELLIGENCE HELPERS
+===================================================== */
+
+// Historical conversion rates between stages (derived from current cohort snapshot)
+function computeStageConversionRates(leads) {
+  const funnelStages = [
+    "New Prospect", "Attempting Contact", "Engagement Initiated",
+    "Application Pending", "Application Completed", "Enrolled"
+  ];
+  const stageCounts = {};
+  leads.forEach(lead => {
+    const stage = lead.ProspectStage || "Unknown";
+    stageCounts[stage] = (stageCounts[stage] || 0) + 1;
+  });
+
+  const rates = {};
+  for (let i = 1; i < funnelStages.length; i++) {
+    const from = funnelStages[i - 1];
+    const to = funnelStages[i];
+    const fromCount = stageCounts[from] || 0;
+    const toCount = stageCounts[to] || 0;
+    // Use cumulative downstream count for conversion rate
+    const downstreamCount = funnelStages.slice(i).reduce((sum, s) => sum + (stageCounts[s] || 0), 0);
+    const upstreamCount = funnelStages.slice(i - 1).reduce((sum, s) => sum + (stageCounts[s] || 0), 0);
+    rates[`${from}_to_${to}`] = upstreamCount > 0 ? (downstreamCount / upstreamCount) : 0;
+  }
+
+  // Overall inquiry-to-start rate
+  const totalFunnel = funnelStages.reduce((sum, s) => sum + (stageCounts[s] || 0), 0);
+  const enrolled = stageCounts["Enrolled"] || 0;
+  rates.inquiry_to_start = totalFunnel > 0 ? (enrolled / totalFunnel) : 0;
+
+  return { rates, stageCounts, funnelStages };
+}
+
+// Gap-to-Goal: how many more leads needed to hit a start target
+function calculateGapToGoal(leads, targetStarts = 50) {
+  const { rates, stageCounts, funnelStages } = computeStageConversionRates(leads);
+  const currentEnrolled = stageCounts["Enrolled"] || 0;
+  const startsNeeded = Math.max(0, targetStarts - currentEnrolled);
+
+  // For each stage, compute how many leads at that stage are needed to yield one start
+  const leadsNeededByStage = {};
+  let cumulativeRate = 1;
+  for (let i = funnelStages.length - 1; i >= 0; i--) {
+    const stage = funnelStages[i];
+    if (i < funnelStages.length - 1) {
+      const from = funnelStages[i];
+      const to = funnelStages[i + 1];
+      const stageRate = rates[`${from}_to_${to}`] || 0;
+      cumulativeRate = stageRate > 0 ? stageRate : 0.01; // avoid division by zero
+    }
+    leadsNeededByStage[stage] = {
+      current_count: stageCounts[stage] || 0,
+      projected_starts_from_current: Math.round((stageCounts[stage] || 0) * (stage === "Enrolled" ? 1 : cumulativeRate)),
+    };
+  }
+
+  // Total projected starts from entire current pipeline
+  const projectedFromPipeline = funnelStages.reduce((sum, stage) => {
+    if (stage === "Enrolled") return sum + (stageCounts[stage] || 0);
+    // Only count students who haven't moved forward yet
+    return sum;
+  }, 0);
+
+  // Simplified: projected starts = enrolled + (pipeline leads × overall conversion rate)
+  const pipelineLeads = funnelStages.slice(0, -1).reduce((sum, s) => sum + (stageCounts[s] || 0), 0);
+  const overallRate = rates.inquiry_to_start || 0;
+  const projectedStarts = currentEnrolled + Math.round(pipelineLeads * overallRate);
+  const additionalLeadsNeeded = overallRate > 0 ? Math.ceil(startsNeeded / overallRate) : 0;
+
+  return {
+    target_starts: targetStarts,
+    current_enrolled: currentEnrolled,
+    pipeline_leads: pipelineLeads,
+    overall_inquiry_to_start_rate: (overallRate * 100).toFixed(1) + "%",
+    projected_starts_from_pipeline: projectedStarts,
+    gap: Math.max(0, targetStarts - projectedStarts),
+    additional_leads_needed: Math.max(0, additionalLeadsNeeded),
+    stage_breakdown: leadsNeededByStage,
+    conversion_rates: rates,
+    on_track: projectedStarts >= targetStarts
+  };
+}
+
+// Start Projection: expected starts from current pipeline
+function calculateStartProjection(leads) {
+  const { rates, stageCounts, funnelStages } = computeStageConversionRates(leads);
+
+  // For each stage, estimate how many will eventually start
+  const projections = {};
+  const enrolled = stageCounts["Enrolled"] || 0;
+  let totalProjectedStarts = enrolled; // Enrolled students are considered starts
+
+  for (let i = funnelStages.length - 2; i >= 0; i--) {
+    const stage = funnelStages[i];
+    const count = stageCounts[stage] || 0;
+
+    // Compute cumulative conversion rate from this stage to Enrolled
+    let cumulativeRate = 1;
+    for (let j = i; j < funnelStages.length - 1; j++) {
+      const rateKey = `${funnelStages[j]}_to_${funnelStages[j + 1]}`;
+      cumulativeRate *= (rates[rateKey] || 0);
+    }
+
+    const expectedStarts = Math.round(count * cumulativeRate);
+    projections[stage] = {
+      current_count: count,
+      conversion_rate_to_start: (cumulativeRate * 100).toFixed(1) + "%",
+      expected_starts: expectedStarts
+    };
+    totalProjectedStarts += expectedStarts;
+  }
+
+  // Confidence bands
+  const optimistic = Math.round(totalProjectedStarts * 1.15);
+  const conservative = Math.round(totalProjectedStarts * 0.85);
+
+  return {
+    total_pipeline: funnelStages.reduce((sum, s) => sum + (stageCounts[s] || 0), 0),
+    current_enrolled: enrolled,
+    projected_total_starts: totalProjectedStarts,
+    optimistic_estimate: optimistic,
+    conservative_estimate: conservative,
+    stage_projections: projections,
+    conversion_rates: rates
+  };
+}
+
+// Conversion Velocity: time between stages
+function calculateConversionVelocity(leads) {
+  const funnelStages = [
+    "New Prospect", "Attempting Contact", "Engagement Initiated",
+    "Application Pending", "Application Completed", "Enrolled"
+  ];
+
+  // Use CreatedOn and mx_Stage_Entered_On to estimate stage timing
+  // Since we don't have per-stage timestamps for every transition,
+  // we use CreatedOn → ModifiedOn as a proxy for total pipeline time
+  const now = new Date();
+  const velocityByStage = {};
+  const stageLeads = {};
+
+  leads.forEach(lead => {
+    const stage = lead.ProspectStage || "Unknown";
+    if (!stageLeads[stage]) stageLeads[stage] = [];
+    stageLeads[stage].push(lead);
+  });
+
+  // Compute average days-in-pipeline for leads at each stage
+  funnelStages.forEach(stage => {
+    const stageData = stageLeads[stage] || [];
+    if (stageData.length === 0) {
+      velocityByStage[stage] = { avg_days_in_stage: 0, lead_count: 0 };
+      return;
+    }
+
+    const daysInPipeline = stageData.map(lead => {
+      const created = lead.CreatedOn ? new Date(lead.CreatedOn) : now;
+      const modified = lead.ModifiedOn ? new Date(lead.ModifiedOn) : now;
+      return Math.max(0, Math.floor((modified - created) / (1000 * 60 * 60 * 24)));
+    });
+
+    const avgDays = daysInPipeline.length > 0
+      ? Math.round(daysInPipeline.reduce((a, b) => a + b, 0) / daysInPipeline.length)
+      : 0;
+
+    velocityByStage[stage] = {
+      avg_days_in_stage: avgDays,
+      lead_count: stageData.length,
+      min_days: Math.min(...daysInPipeline),
+      max_days: Math.max(...daysInPipeline)
+    };
+  });
+
+  // Estimate stage-to-stage transition times
+  const stageTransitions = [];
+  for (let i = 0; i < funnelStages.length - 1; i++) {
+    const from = funnelStages[i];
+    const to = funnelStages[i + 1];
+    const fromAvg = velocityByStage[from]?.avg_days_in_stage || 0;
+    const toAvg = velocityByStage[to]?.avg_days_in_stage || 0;
+    stageTransitions.push({
+      from_stage: from,
+      to_stage: to,
+      estimated_days: Math.max(1, toAvg - fromAvg),
+      from_count: velocityByStage[from]?.lead_count || 0,
+      to_count: velocityByStage[to]?.lead_count || 0
+    });
+  }
+
+  // Total estimated pipeline duration
+  const totalDays = stageTransitions.reduce((sum, t) => sum + t.estimated_days, 0);
+
+  return {
+    stage_velocity: velocityByStage,
+    stage_transitions: stageTransitions,
+    total_pipeline_days: totalDays,
+    funnel_stages: funnelStages
+  };
+}
+
+/* =====================================================
    STEP 2C: ASSEMBLE DATA CONTEXT FOR REPORT TYPE
 ===================================================== */
 
@@ -419,7 +656,7 @@ async function assembleDataContext(reportType, filters) {
   };
 
   // Most report types need CRM data
-  const crmTypes = ["enrollment_funnel", "campus_comparison", "source_roi", "counselor_performance", "program_performance", "at_risk_students", "general"];
+  const crmTypes = ["enrollment_funnel", "campus_comparison", "source_roi", "counselor_performance", "program_performance", "at_risk_students", "pipeline_gap_to_goal", "pipeline_start_projection", "conversion_velocity", "general"];
   if (crmTypes.includes(reportType)) {
     const leads = await fetchCRMLeads(filters);
     context.crm_data = leads;
@@ -440,6 +677,18 @@ async function assembleDataContext(reportType, filters) {
 
     if (reportType === "at_risk_students") {
       context.aggregations.at_risk = identifyAtRiskLeads(leads);
+    }
+
+    // Pipeline intelligence computations
+    if (reportType === "pipeline_gap_to_goal") {
+      // Default target of 50 starts — the LLM can reference this in its report
+      context.aggregations.gap_to_goal = calculateGapToGoal(leads, 50);
+    }
+    if (reportType === "pipeline_start_projection") {
+      context.aggregations.start_projection = calculateStartProjection(leads);
+    }
+    if (reportType === "conversion_velocity") {
+      context.aggregations.conversion_velocity = calculateConversionVelocity(leads);
     }
   }
 
@@ -572,7 +821,13 @@ RULES:
 - Proactive alert should flag something concerning in the data (or null if nothing notable)
 - Keep narrative sections to 2-4 sections max
 - Each recommended action must cite specific data points
-- Always use "starts" not "enrollments", "programs" not "majors", "admissions reps" not "counselors", "completion rate" not "graduation rate"`
+- Always use "starts" not "enrollments", "programs" not "majors", "admissions reps" not "counselors", "completion rate" not "graduation rate"
+- Conversion rates between stages must never exceed 100%. If the data shows >100%, cap at 100% and note the anomaly.
+- The enrollment-to-start gap is the single most important revenue metric for career schools. When a student fails to start, the school loses $15K-$25K in tuition. When a student withdraws mid-program, the school must perform an R2T4 calculation and return Title IV aid.
+- For pipeline_gap_to_goal reports: Focus on the gap between projected starts and the target. Show how many additional leads are needed at each stage. Frame it as actionable — "You need X more leads at the top of funnel to hit your target."
+- For pipeline_start_projection reports: Show conservative, projected, and optimistic estimates. Break down expected starts by current stage. Frame it as a forecast — "Based on current pipeline, you can expect X starts for the May cohort."
+- For conversion_velocity reports: Show stage-to-stage transition times. Highlight bottlenecks where leads are stuck longest. Frame it as operational — "Leads spend an average of X days between Application Pending and Application Completed — this is your biggest bottleneck."
+- Reference "retention" and "attrition" as the biggest post-start revenue problem. Reference "attendance rate" as the leading indicator of withdrawal.`
       },
       { role: "user", content: userPrompt }
     ],
@@ -599,31 +854,35 @@ async function generateProactiveInsights() {
     });
 
     if (staleLeads.length > 10) {
-      const acceptedStale = staleLeads.filter(l =>
-        l.ProspectStage === "Accepted"
+      const enrolledStale = staleLeads.filter(l =>
+        l.ProspectStage === "Enrolled" || l.ProspectStage === "Application Completed"
       );
       insights.push({
-        severity: acceptedStale.length > 5 ? "critical" : "warning",
+        severity: enrolledStale.length > 5 ? "critical" : "warning",
         title: `${staleLeads.length} students haven't engaged in 21+ days`,
-        description: acceptedStale.length > 0
-          ? `${acceptedStale.length} are in Accepted stage — at high risk of melt.`
+        description: enrolledStale.length > 0
+          ? `${enrolledStale.length} are enrolled or application-completed — at high risk of not starting.`
           : `Spread across multiple pipeline stages. Review admissions rep follow-up cadence.`,
         investigate_prompt: "Show me at-risk students with no activity in 21 days"
       });
     }
 
-    // Check 2: Application Completed to Enrolled drop
+    // Check 2: Enrollment-to-Start gap (the revenue leak)
+    // In career schools, the gap between enrolled and actually started is where revenue disappears
     const funnel = buildFunnelData(allLeads);
-    const completed = funnel["Application Completed"]?.count || 0;
+    const appCompleted = funnel["Application Completed"]?.count || 0;
     const enrolled = funnel["Enrolled"]?.count || 0;
-    if (completed > 0 && enrolled > 0) {
-      const yieldRate = (enrolled / completed) * 100;
-      if (yieldRate < 70) {
+    const totalPipeline = allLeads.length;
+    // Use enrolled vs total pipeline to show start rate pressure
+    if (appCompleted > 0 && enrolled >= 0) {
+      const startRate = appCompleted > 0 ? (enrolled / appCompleted) * 100 : 0;
+      if (startRate < 70) {
+        const atRiskCount = appCompleted - enrolled;
         insights.push({
-          severity: yieldRate < 50 ? "critical" : "warning",
-          title: `Start rate at ${yieldRate.toFixed(0)}% — below target`,
-          description: `Only ${enrolled} of ${completed} students with completed applications have started. ${completed - enrolled} are at risk of not starting.`,
-          investigate_prompt: "Show me students with completed applications who haven't started"
+          severity: startRate < 50 ? "critical" : "warning",
+          title: `Enrollment-to-start rate at ${startRate.toFixed(0)}% — below target`,
+          description: `Only ${enrolled} of ${appCompleted} students with completed applications have enrolled. ${atRiskCount} are at risk of not starting — representing potential tuition revenue loss and R2T4 exposure.`,
+          investigate_prompt: "Show me the gap-to-goal for the May 2026 cohort"
         });
       }
     }
